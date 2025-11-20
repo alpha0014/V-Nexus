@@ -1,513 +1,467 @@
-// App State
-let currentUser = null;
-let posts = JSON.parse(localStorage.getItem('posts')) || [];
-let users = JSON.parse(localStorage.getItem('users')) || [];
-let userMenuOpen = false;
-
-// Default profile picture (simple SVG as base64)
-const defaultProfilePic = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjNDQ3NmZmIi8+CjxjaXJjbGUgY3g9IjEwMCIgY3k9Ijg1IiByPSI0MCIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTEwMCAxNDBDMTE2LjU2OSAxNDAgMTMwIDE1My40MzEgMTMwIDE3MEg3MEM3MCAxNTMuNDMxIDgzLjQzMSAxNDAgMTAwIDE0MFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=';
-
 // DOM Elements
 const loginModal = document.getElementById('loginModal');
-const registerModal = document.getElementById('registerModal');
-const profileModal = document.getElementById('profileModal');
-const app = document.getElementById('app');
-const postsContainer = document.getElementById('posts');
-const imageInput = document.getElementById('imageInput');
-const imagePreview = document.getElementById('imagePreview');
+const appContainer = document.getElementById('appContainer');
+const loginButton = document.getElementById('loginButton');
+const logoutButton = document.getElementById('logoutBtn');
+const navLinks = document.querySelectorAll('.nav-links a');
+const pages = document.querySelectorAll('.page');
+const likeButtons = document.querySelectorAll('.like-button');
+const createPostBtn = document.getElementById('createPostBtn');
+const friendsTabs = document.querySelectorAll('.friends-tab');
+const friendsGrid = document.getElementById('friendsGrid');
+const notificationsList = document.getElementById('notificationsList');
+const searchInput = document.getElementById('searchInput');
+const loginError = document.getElementById('loginError');
 
-// Initialize App
-document.addEventListener('DOMContentLoaded', function() {
-    checkLoginStatus();
+// Sample Data
+const friendsData = {
+    all: [
+        { id: 1, name: 'Alex Johnson', initials: 'AJ', mutualFriends: 12 },
+        { id: 2, name: 'Sarah Miller', initials: 'SM', mutualFriends: 8 },
+        { id: 3, name: 'Michael Kim', initials: 'MK', mutualFriends: 15 },
+        { id: 4, name: 'Emma Roberts', initials: 'ER', mutualFriends: 5 },
+        { id: 5, name: 'David Chen', initials: 'DC', mutualFriends: 7 },
+        { id: 6, name: 'Lisa Wang', initials: 'LW', mutualFriends: 3 }
+    ],
+    requests: [
+        { id: 7, name: 'James Wilson', initials: 'JW', mutualFriends: 4 },
+        { id: 8, name: 'Olivia Brown', initials: 'OB', mutualFriends: 6 },
+        { id: 9, name: 'Noah Taylor', initials: 'NT', mutualFriends: 2 }
+    ],
+    suggestions: [
+        { id: 10, name: 'Sophia Garcia', initials: 'SG', mutualFriends: 9 },
+        { id: 11, name: 'William Martinez', initials: 'WM', mutualFriends: 11 },
+        { id: 12, name: 'Isabella Lee', initials: 'IL', mutualFriends: 5 }
+    ]
+};
+
+const notificationsData = [
+    {
+        id: 1,
+        type: 'friend_request',
+        icon: 'user-plus',
+        text: '<strong>Alex Johnson</strong> sent you a friend request.',
+        time: '10 minutes ago',
+        unread: true
+    },
+    {
+        id: 2,
+        type: 'like',
+        icon: 'heart',
+        text: '<strong>Sarah Miller</strong> and 12 others liked your post.',
+        time: '2 hours ago',
+        unread: false
+    },
+    {
+        id: 3,
+        type: 'comment',
+        icon: 'comment',
+        text: '<strong>Michael Kim</strong> commented on your post: "Great shot!"',
+        time: '5 hours ago',
+        unread: false
+    },
+    {
+        id: 4,
+        type: 'birthday',
+        icon: 'birthday-cake',
+        text: 'It\'s <strong>Emma Roberts</strong>\'s birthday today. Wish them a happy birthday!',
+        time: '1 day ago',
+        unread: false
+    }
+];
+
+// Initialize the application
+function initApp() {
+    // Check if user is already logged in
+    const isLoggedIn = localStorage.getItem('vnexusLoggedIn');
+    const savedUsername = localStorage.getItem('vnexusUsername');
+    
+    if (isLoggedIn === 'true' && savedUsername) {
+        // User is logged in, show the app
+        showApp();
+        updateProfileInfo(savedUsername);
+    } else {
+        // User is not logged in, show login modal
+        showLogin();
+    }
+    
+    // Load initial data
+    loadFriends('all');
+    loadNotifications();
     setupEventListeners();
-    renderPosts();
-    updateSidebarStats();
-});
+}
 
-// Event Listeners
+// Setup all event listeners
 function setupEventListeners() {
-    // Login/Register forms
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
-    document.getElementById('registerForm').addEventListener('submit', handleRegister);
-    document.getElementById('showRegister').addEventListener('click', showRegister);
-    document.getElementById('showLogin').addEventListener('click', showLogin);
+    // Login functionality
+    loginButton.addEventListener('click', handleLogin);
     
-    // Image upload
-    imageInput.addEventListener('change', handleImageUpload);
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.user-menu')) {
-            closeUserMenu();
+    // Allow login with Enter key
+    document.getElementById('password').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            handleLogin();
         }
     });
+    
+    // Logout functionality
+    logoutButton.addEventListener('click', handleLogout);
+    
+    // Navigation
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchPage(link.getAttribute('data-page'));
+        });
+    });
+    
+    // Like functionality
+    likeButtons.forEach(button => {
+        button.addEventListener('click', toggleLike);
+    });
+    
+    // Create Post Button
+    createPostBtn.addEventListener('click', createPost);
+    
+    // Friends tabs
+    friendsTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            switchFriendsTab(tab.getAttribute('data-tab'));
+        });
+    });
+    
+    // Search functionality
+    searchInput.addEventListener('keyup', handleSearch);
+    
+    // Settings changes
+    document.getElementById('privateAccount').addEventListener('change', saveSettings);
+    document.getElementById('emailNotifications').addEventListener('change', saveSettings);
+    document.getElementById('pushNotifications').addEventListener('change', saveSettings);
+    document.getElementById('postVisibility').addEventListener('change', saveSettings);
+    document.getElementById('friendRequests').addEventListener('change', saveSettings);
+    document.getElementById('language').addEventListener('change', saveSettings);
+    document.getElementById('theme').addEventListener('change', saveSettings);
+    document.getElementById('manageBlocked').addEventListener('click', manageBlockedUsers);
+    document.getElementById('addFriendBtn').addEventListener('click', addFriend);
 }
 
-// Login System
-function handleLogin(e) {
-    e.preventDefault();
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+// Login handler
+function handleLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
     
-    const user = users.find(u => u.username === username && u.password === password);
-    
-    if (user) {
-        currentUser = user;
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        hideModals();
-        showApp();
-        updateUserProfilePics();
-    } else {
-        alert('Invalid username or password');
-    }
-}
-
-function handleRegister(e) {
-    e.preventDefault();
-    const username = document.getElementById('regUsername').value;
-    const email = document.getElementById('regEmail').value;
-    const password = document.getElementById('regPassword').value;
-    
-    if (users.find(u => u.username === username)) {
-        alert('Username already exists');
+    // Validate inputs
+    if (!username || !password) {
+        showLoginError('Please enter both username and password');
         return;
     }
     
-    const newUser = { 
-        username, 
-        email, 
-        password, 
-        profilePic: defaultProfilePic,
-        bio: 'Hello! I am new to V-Nexus.',
-        joinDate: new Date().toISOString()
-    };
+    if (password.length < 3) {
+        showLoginError('Password must be at least 3 characters long');
+        return;
+    }
     
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
+    // Simulate login process
+    loginError.textContent = '';
+    loginButton.textContent = 'Logging in...';
+    loginButton.disabled = true;
     
-    alert('Registration successful! Please login.');
+    setTimeout(() => {
+        // Successful login
+        localStorage.setItem('vnexusLoggedIn', 'true');
+        localStorage.setItem('vnexusUsername', username);
+        showApp();
+        updateProfileInfo(username);
+        
+        // Reset login form
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        loginButton.textContent = 'Log In';
+        loginButton.disabled = false;
+    }, 1000);
+}
+
+// Show login error
+function showLoginError(message) {
+    loginError.textContent = message;
+    loginModal.classList.add('shake');
+    setTimeout(() => {
+        loginModal.classList.remove('shake');
+    }, 500);
+}
+
+// Logout handler
+function handleLogout() {
+    localStorage.removeItem('vnexusLoggedIn');
+    localStorage.removeItem('vnexusUsername');
     showLogin();
 }
 
+// Show login modal
 function showLogin() {
-    registerModal.style.display = 'none';
-    loginModal.style.display = 'flex';
-    document.getElementById('loginForm').reset();
+    loginModal.classList.remove('hidden');
+    appContainer.style.display = 'none';
 }
 
-function showRegister() {
-    loginModal.style.display = 'none';
-    registerModal.style.display = 'flex';
-    document.getElementById('registerForm').reset();
-}
-
-function logout() {
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-    app.style.display = 'none';
-    loginModal.style.display = 'flex';
-    document.getElementById('loginForm').reset();
-    closeUserMenu();
-}
-
-function checkLoginStatus() {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        hideModals();
-        showApp();
-        updateUserProfilePics();
-    }
-}
-
-function hideModals() {
-    loginModal.style.display = 'none';
-    registerModal.style.display = 'none';
-    profileModal.style.display = 'none';
-}
-
+// Show main app
 function showApp() {
-    app.style.display = 'block';
-    document.getElementById('currentUser').textContent = currentUser.username;
-    document.getElementById('sidebarUsername').textContent = currentUser.username;
+    loginModal.classList.add('hidden');
+    appContainer.style.display = 'flex';
 }
 
-// User Menu
-function toggleUserMenu() {
-    userMenuOpen = !userMenuOpen;
-    const dropdown = document.getElementById('userDropdown');
-    if (userMenuOpen) {
-        dropdown.classList.add('show');
-    } else {
-        dropdown.classList.remove('show');
-    }
-}
-
-function closeUserMenu() {
-    userMenuOpen = false;
-    document.getElementById('userDropdown').classList.remove('show');
-}
-
-// Profile Pictures
-function updateUserProfilePics() {
-    const headerPic = document.getElementById('headerProfilePic');
-    const sidebarPic = document.getElementById('sidebarProfilePic');
+// Update profile information
+function updateProfileInfo(username) {
+    const profileName = document.querySelector('.profile-info .name');
+    const profileUsername = document.querySelector('.profile-info .username');
+    const profilePic = document.querySelector('.profile-summary .profile-pic');
     
-    if (currentUser.profilePic) {
-        headerPic.src = currentUser.profilePic;
-        sidebarPic.src = currentUser.profilePic;
-    } else {
-        headerPic.src = defaultProfilePic;
-        sidebarPic.src = defaultProfilePic;
-    }
-}
-
-function getUserProfilePic(username) {
-    const user = users.find(u => u.username === username);
-    return user?.profilePic || defaultProfilePic;
-}
-
-// Image Upload
-function handleImageUpload(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
-// Posts System
-function addPost() {
-    const input = document.getElementById('postInput');
-    const postText = input.value.trim();
+    // Generate initials from username
+    const initials = username.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
     
-    if (!postText && !imagePreview.innerHTML) {
-        alert('Post cannot be empty!');
+    if (profileName) profileName.textContent = username;
+    if (profileUsername) profileUsername.textContent = `@${username.toLowerCase().replace(/\s+/g, '')}`;
+    if (profilePic) profilePic.textContent = initials;
+}
+
+// Switch between pages
+function switchPage(pageId) {
+    // Remove active class from all links
+    navLinks.forEach(link => link.classList.remove('active'));
+    
+    // Add active class to clicked link
+    document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+    
+    // Hide all pages
+    pages.forEach(page => page.classList.remove('active'));
+    
+    // Show the selected page
+    document.getElementById(pageId).classList.add('active');
+}
+
+// Toggle like on posts
+function toggleLike(e) {
+    const button = e.currentTarget;
+    const icon = button.querySelector('i');
+    const likesElement = button.closest('.post').querySelector('.likes');
+    
+    if (icon.classList.contains('far')) {
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+        button.classList.add('liked');
+        
+        // Update likes count
+        const currentLikes = parseInt(likesElement.textContent) || 0;
+        likesElement.textContent = `${currentLikes + 1} likes`;
+    } else {
+        icon.classList.remove('fas');
+        icon.classList.add('far');
+        button.classList.remove('liked');
+        
+        // Update likes count
+        const currentLikes = parseInt(likesElement.textContent) || 1;
+        likesElement.textContent = `${currentLikes - 1} likes`;
+    }
+}
+
+// Create a new post
+function createPost() {
+    const postContent = document.getElementById('postContent').value.trim();
+    
+    if (!postContent) {
+        alert('Please write something to post!');
         return;
     }
     
-    const imageSrc = imagePreview.querySelector('img')?.src || null;
-    
-    const newPost = {
-        id: Date.now(),
-        userId: currentUser.username,
-        text: postText,
-        image: imageSrc,
-        timestamp: new Date().toISOString(),
-        likes: [],
-        comments: []
-    };
-    
-    posts.unshift(newPost);
-    savePosts();
-    renderPosts();
-    updateSidebarStats();
-    
-    // Reset form
-    input.value = '';
-    imagePreview.innerHTML = '';
-    imageInput.value = '';
+    // In a real app, this would send the post to a server
+    alert(`Post created: "${postContent}"`);
+    document.getElementById('postContent').value = '';
 }
 
-function renderPosts() {
-    postsContainer.innerHTML = '';
+// Switch friends tabs
+function switchFriendsTab(tabId) {
+    // Remove active class from all tabs
+    friendsTabs.forEach(tab => tab.classList.remove('active'));
     
-    posts.forEach(post => {
-        const postElement = createPostElement(post);
-        postsContainer.appendChild(postElement);
+    // Add active class to clicked tab
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+    
+    // Load the appropriate friends list
+    loadFriends(tabId);
+}
+
+// Load friends based on tab
+function loadFriends(tabId) {
+    const friends = friendsData[tabId];
+    
+    if (!friends) return;
+    
+    // Clear the grid
+    friendsGrid.innerHTML = '';
+    
+    // Add friends to the grid
+    friends.forEach(friend => {
+        const friendCard = document.createElement('div');
+        friendCard.className = 'friend-card';
+        friendCard.innerHTML = `
+            <div class="profile-pic">${friend.initials}</div>
+            <div class="name">${friend.name}</div>
+            <div class="mutual-friends">${friend.mutualFriends} mutual friends</div>
+            <div class="friend-actions">
+                <button class="message-btn">Message</button>
+                ${tabId === 'all' ? '<button class="remove">Remove</button>' : 
+                  tabId === 'requests' ? '<button class="accept">Accept</button><button class="decline">Decline</button>' : 
+                  '<button class="add">Add Friend</button>'}
+            </div>
+        `;
+        friendsGrid.appendChild(friendCard);
+    });
+    
+    // Add event listeners to friend action buttons
+    document.querySelectorAll('.message-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const friendName = e.target.closest('.friend-card').querySelector('.name').textContent;
+            alert(`Opening chat with ${friendName}`);
+        });
+    });
+    
+    document.querySelectorAll('.remove').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const friendCard = e.target.closest('.friend-card');
+            const friendName = friendCard.querySelector('.name').textContent;
+            if (confirm(`Are you sure you want to remove ${friendName} as a friend?`)) {
+                friendCard.style.opacity = '0';
+                setTimeout(() => {
+                    friendCard.remove();
+                }, 300);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.accept, .add').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const friendCard = e.target.closest('.friend-card');
+            const friendName = friendCard.querySelector('.name').textContent;
+            alert(`Friend request sent to ${friendName}`);
+            friendCard.style.opacity = '0';
+            setTimeout(() => {
+                friendCard.remove();
+            }, 300);
+        });
+    });
+    
+    document.querySelectorAll('.decline').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const friendCard = e.target.closest('.friend-card');
+            friendCard.style.opacity = '0';
+            setTimeout(() => {
+                friendCard.remove();
+            }, 300);
+        });
     });
 }
 
-function createPostElement(post) {
-    const postDiv = document.createElement('div');
-    postDiv.className = 'post';
-    postDiv.innerHTML = `
-        <div class="post-header" onclick="viewUserProfile('${post.userId}')">
-            <img src="${getUserProfilePic(post.userId)}" alt="${post.userId}" class="post-avatar">
-            <div class="post-user-info">
-                <div class="post-user">${post.userId}</div>
-                <div class="post-time">${formatTime(post.timestamp)}</div>
-            </div>
-        </div>
-        <div class="post-content">
-            ${post.text ? `<p>${post.text}</p>` : ''}
-            ${post.image ? `<img src="${post.image}" class="post-image" alt="Post image">` : ''}
-        </div>
-        <div class="post-actions">
-            <button class="action-btn ${post.likes.includes(currentUser.username) ? 'liked' : ''}" 
-                    onclick="toggleLike(${post.id})">
-                <i class="fas fa-heart"></i>
-                <span>${post.likes.length}</span>
-            </button>
-            <button class="action-btn" onclick="focusComment(${post.id})">
-                <i class="fas fa-comment"></i>
-                <span>${post.comments.length}</span>
-            </button>
-        </div>
-        <div class="comments-section">
-            ${renderComments(post.comments)}
-            <div class="comment-input">
-                <input type="text" id="comment-${post.id}" placeholder="Write a comment...">
-                <button onclick="addComment(${post.id})">Post</button>
-            </div>
-        </div>
-    `;
+// Load notifications
+function loadNotifications() {
+    // Clear the list
+    notificationsList.innerHTML = '';
     
-    return postDiv;
+    // Add notifications to the list
+    notificationsData.forEach(notification => {
+        const notificationElement = document.createElement('div');
+        notificationElement.className = `notification ${notification.unread ? 'unread' : ''}`;
+        notificationElement.innerHTML = `
+            <div class="notification-icon">
+                <i class="fas fa-${notification.icon}"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-text">${notification.text}</div>
+                <div class="notification-time">${notification.time}</div>
+            </div>
+            <div class="notification-actions">
+                ${notification.type === 'friend_request' ? 
+                  '<button class="accept-notification"><i class="fas fa-check"></i></button>' : ''}
+                <button class="dismiss-notification"><i class="fas fa-times"></i></button>
+            </div>
+        `;
+        notificationsList.appendChild(notificationElement);
+    });
+    
+    // Add event listeners to notification buttons
+    document.querySelectorAll('.accept-notification').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const notification = e.target.closest('.notification');
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        });
+    });
+    
+    document.querySelectorAll('.dismiss-notification').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const notification = e.target.closest('.notification');
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        });
+    });
 }
 
-function renderComments(comments) {
-    if (comments.length === 0) return '';
-    
-    return comments.map(comment => `
-        <div class="comment">
-            <div class="comment-header">
-                <span class="comment-user" onclick="viewUserProfile('${comment.userId}')">${comment.userId}</span>
-                <span class="comment-time">${formatTime(comment.timestamp)}</span>
-            </div>
-            <p>${comment.text}</p>
-        </div>
-    `).join('');
-}
-
-// Like System
-function toggleLike(postId) {
-    const post = posts.find(p => p.id === postId);
-    if (!post) return;
-    
-    const userIndex = post.likes.indexOf(currentUser.username);
-    
-    if (userIndex > -1) {
-        post.likes.splice(userIndex, 1);
-    } else {
-        post.likes.push(currentUser.username);
+// Handle search
+function handleSearch(e) {
+    if (e.key === 'Enter') {
+        const searchTerm = searchInput.value.trim();
+        if (searchTerm) {
+            alert(`Searching for: "${searchTerm}"`);
+            // In a real app, this would make an API call to search for content/users
+        }
     }
-    
-    savePosts();
-    renderPosts();
-    updateSidebarStats();
 }
 
-// Comment System
-function addComment(postId) {
-    const commentInput = document.getElementById(`comment-${postId}`);
-    const commentText = commentInput.value.trim();
-    
-    if (!commentText) return;
-    
-    const post = posts.find(p => p.id === postId);
-    if (!post) return;
-    
-    const newComment = {
-        id: Date.now(),
-        userId: currentUser.username,
-        text: commentText,
-        timestamp: new Date().toISOString()
+// Save settings
+function saveSettings() {
+    const settings = {
+        privateAccount: document.getElementById('privateAccount').checked,
+        emailNotifications: document.getElementById('emailNotifications').checked,
+        pushNotifications: document.getElementById('pushNotifications').checked,
+        postVisibility: document.getElementById('postVisibility').value,
+        friendRequests: document.getElementById('friendRequests').value,
+        language: document.getElementById('language').value,
+        theme: document.getElementById('theme').value
     };
     
-    post.comments.push(newComment);
-    savePosts();
-    renderPosts();
-    updateSidebarStats();
-    
-    commentInput.value = '';
+    localStorage.setItem('vnexusSettings', JSON.stringify(settings));
+    console.log('Settings saved:', settings);
 }
 
-function focusComment(postId) {
-    const commentInput = document.getElementById(`comment-${postId}`);
-    commentInput.focus();
-}
-
-// Profile System
-function viewMyProfile() {
-    viewUserProfile(currentUser.username);
-    closeUserMenu();
-}
-
-function viewUserProfile(username) {
-    const user = users.find(u => u.username === username);
-    if (!user) return;
-    
-    const userPosts = posts.filter(p => p.userId === username);
-    const totalLikes = userPosts.reduce((sum, post) => sum + post.likes.length, 0);
-    const totalComments = userPosts.reduce((sum, post) => sum + post.comments.length, 0);
-    
-    const isOwnProfile = username === currentUser.username;
-    
-    document.getElementById('profileContent').innerHTML = `
-        <div class="profile-header">
-            <img src="${user.profilePic || defaultProfilePic}" alt="${username}" class="profile-picture-large">
-            <h2 class="profile-username">${username}</h2>
-            <p class="profile-email">${user.email}</p>
-            <p class="profile-bio">${user.bio || 'No bio yet.'}</p>
-            <div class="profile-stats">
-                <div class="profile-stat">
-                    <span class="profile-stat-number">${userPosts.length}</span>
-                    <span class="profile-stat-label">Posts</span>
-                </div>
-                <div class="profile-stat">
-                    <span class="profile-stat-number">${totalLikes}</span>
-                    <span class="profile-stat-label">Likes</span>
-                </div>
-                <div class="profile-stat">
-                    <span class="profile-stat-number">${totalComments}</span>
-                    <span class="profile-stat-label">Comments</span>
-                </div>
-            </div>
-            ${isOwnProfile ? `
-                <div class="profile-actions">
-                    <button class="edit-profile-btn" onclick="openEditProfile()">Edit Profile</button>
-                </div>
-            ` : ''}
-        </div>
-        <div class="profile-posts">
-            <h3>${isOwnProfile ? 'Your Posts' : `${username}'s Posts`}</h3>
-            ${userPosts.length === 0 ? 
-                `<p style="text-align: center; padding: 40px; color: #666;">No posts yet.</p>` : 
-                userPosts.map(post => `
-                    <div class="post">
-                        <div class="post-content">
-                            ${post.text ? `<p>${post.text}</p>` : ''}
-                            ${post.image ? `<img src="${post.image}" class="post-image" alt="Post image">` : ''}
-                        </div>
-                        <div class="post-actions">
-                            <span><i class="fas fa-heart"></i> ${post.likes.length}</span>
-                            <span><i class="fas fa-comment"></i> ${post.comments.length}</span>
-                            <span class="post-time">${formatTime(post.timestamp)}</span>
-                        </div>
-                    </div>
-                `).join('')}
-        </div>
-    `;
-    
-    profileModal.style.display = 'flex';
-}
-
-function openEditProfile() {
-    document.getElementById('profileContent').innerHTML = `
-        <h2>Edit Profile</h2>
-        <div class="edit-profile-form">
-            <div class="form-group">
-                <label>Profile Picture</label>
-                <div class="profile-picture-upload">
-                    <img id="editProfilePicPreview" src="${currentUser.profilePic || defaultProfilePic}" 
-                         alt="Profile Preview" class="profile-picture-preview">
-                    <div>
-                        <input type="file" id="editProfilePicInput" accept="image/*" 
-                               onchange="previewProfilePicture(this)" style="margin-bottom: 10px;">
-                        <br>
-                        <button type="button" onclick="document.getElementById('editProfilePicInput').click()">
-                            Change Picture
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="editBio">Bio</label>
-                <textarea id="editBio" placeholder="Tell us about yourself..." 
-                          style="width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; resize: vertical;">${currentUser.bio || ''}</textarea>
-            </div>
-            <div class="form-group">
-                <label for="editEmail">Email</label>
-                <input type="email" id="editEmail" value="${currentUser.email}" 
-                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button type="button" onclick="saveProfile()" style="flex: 1;">Save Changes</button>
-                <button type="button" onclick="closeProfileModal()" 
-                        style="flex: 1; background-color: #6c757d;">Cancel</button>
-            </div>
-        </div>
-    `;
-    
-    profileModal.style.display = 'flex';
-}
-
-function previewProfilePicture(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('editProfilePicPreview').src = e.target.result;
-        };
-        reader.readAsDataURL(input.files[0]);
+// Load settings
+function loadSettings() {
+    const savedSettings = localStorage.getItem('vnexusSettings');
+    if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        
+        document.getElementById('privateAccount').checked = settings.privateAccount || false;
+        document.getElementById('emailNotifications').checked = settings.emailNotifications !== false;
+        document.getElementById('pushNotifications').checked = settings.pushNotifications !== false;
+        document.getElementById('postVisibility').value = settings.postVisibility || 'Friends';
+        document.getElementById('friendRequests').value = settings.friendRequests || 'Everyone';
+        document.getElementById('language').value = settings.language || 'English';
+        document.getElementById('theme').value = settings.theme || 'Dark';
     }
 }
 
-function saveProfile() {
-    const newBio = document.getElementById('editBio').value;
-    const newEmail = document.getElementById('editEmail').value;
-    const profilePicInput = document.getElementById('editProfilePicInput');
-    
-    // Update current user
-    currentUser.bio = newBio;
-    currentUser.email = newEmail;
-    
-    // Handle profile picture update
-    if (profilePicInput.files && profilePicInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            currentUser.profilePic = e.target.result;
-            updateUserInStorage();
-            updateUserProfilePics();
-            closeProfileModal();
-            viewMyProfile(); // Refresh profile view
-        };
-        reader.readAsDataURL(profilePicInput.files[0]);
-    } else {
-        updateUserInStorage();
-        closeProfileModal();
-        viewMyProfile(); // Refresh profile view
-    }
+// Manage blocked users
+function manageBlockedUsers() {
+    alert('Blocked users management would open here');
 }
 
-function updateUserInStorage() {
-    // Update in users array
-    const userIndex = users.findIndex(u => u.username === currentUser.username);
-    if (userIndex !== -1) {
-        users[userIndex] = currentUser;
-        localStorage.setItem('users', JSON.stringify(users));
-    }
-    
-    // Update current user in localStorage
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+// Add friend
+function addFriend() {
+    alert('Add friend functionality would open here');
 }
 
-function closeProfileModal() {
-    profileModal.style.display = 'none';
-}
-
-// Sidebar Stats
-function updateSidebarStats() {
-    const userPosts = posts.filter(p => p.userId === currentUser.username);
-    const totalLikes = userPosts.reduce((sum, post) => sum + post.likes.length, 0);
-    const totalComments = userPosts.reduce((sum, post) => sum + post.comments.length, 0);
-    
-    document.getElementById('postCount').textContent = userPosts.length;
-    document.getElementById('likeCount').textContent = totalLikes;
-    document.getElementById('commentCount').textContent = totalComments;
-}
-
-// Utility Functions
-function formatTime(timestamp) {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now - date;
-    
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-    
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    
-    return date.toLocaleDateString();
-}
-
-function savePosts() {
-    localStorage.setItem('posts', JSON.stringify(posts));
-}
+// Initialize the app when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initApp();
+    loadSettings();
+});

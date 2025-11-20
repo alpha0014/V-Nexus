@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V-nexus</title>
+    <link rel="stylesheet" href="main.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <h2>Login to V-Nexus</h2>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+            <p>Don't have an account? <a href="#" id="showRegister">Register</a></p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal" style="display:none">
+        <div class="modal-content">
+            <h2>Register for V-Nexus</h2>
+            <form id="registerForm">
+                <input type="text" id="regUsername" placeholder="Username" required>
+                <input type="email" id="regEmail" placeholder="Email" required>
+                <input type="password" id="regPassword" placeholder="Password" required>
+                <button type="submit">Register</button>
+            </form>
+            <p>Already have an account? <a href="#" id="showLogin">Login</a></p>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal" style="display:none">
+        <div class="modal-content profile-modal">
+            <span class="close-btn" onclick="closeProfileModal()">&times;</span>
+            <div id="profileContent">
+                <!-- Profile content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App (hidden until login) -->
+    <div id="app" style="display:none">
+        <!-- Header -->
+        <header>
+            <h1>V-nexus</h1>
+            <div class="user-info">
+                <div class="user-menu">
+                    <div class="current-user" onclick="toggleUserMenu()">
+                        <img id="headerProfilePic" src="" alt="Profile" class="header-profile-pic">
+                        <span id="currentUser"></span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="userDropdown" class="user-dropdown">
+                        <a href="#" onclick="viewMyProfile()"><i class="fas fa-user"></i> My Profile</a>
+                        <a href="#" onclick="openEditProfile()"><i class="fas fa-edit"></i> Edit Profile</a>
+                        <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-profile" onclick="viewMyProfile()">
+                    <img id="sidebarProfilePic" src="" alt="Profile" class="sidebar-profile-pic">
+                    <div class="sidebar-user-info">
+                        <strong id="sidebarUsername"></strong>
+                        <span>View your profile</span>
+                    </div>
+                </div>
+                <div class="sidebar-stats">
+                    <div class="stat">
+                        <strong id="postCount">0</strong>
+                        <span>Posts</span>
+                    </div>
+                    <div class="stat">
+                        <strong id="likeCount">0</strong>
+                        <span>Likes</span>
+                    </div>
+                    <div class="stat">
+                        <strong id="commentCount">0</strong>
+                        <span>Comments</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feed -->
+            <div class="feed">
+                <!-- New Post Section -->
+                <div class="new-post">
+                    <textarea id="postInput" placeholder="What is on your mind?"></textarea>
+                    
+                    <!-- Image Upload -->
+                    <div class="image-upload">
+                        <label for="imageInput" class="upload-btn">
+                            <i class="fas fa-image"></i> Add Image
+                        </label>
+                        <input type="file" id="imageInput" accept="image/*" style="display:none">
+                        <div id="imagePreview"></div>
+                    </div>
+                    
+                    <button onclick="addPost()">Post</button>
+                </div>
+
+                <!-- Posts Container -->
+                <div id="posts"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

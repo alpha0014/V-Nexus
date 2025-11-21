@@ -1,374 +1,730 @@
-// DOM Elements
-const loginModal = document.getElementById('loginModal');
-const appContainer = document.getElementById('appContainer');
-const loginButton = document.getElementById('loginButton');
-const logoutButton = document.getElementById('logoutBtn');
-const navLinks = document.querySelectorAll('.nav-links a');
-const pages = document.querySelectorAll('.page');
-const likeButtons = document.querySelectorAll('.like-button');
-const createPostBtn = document.getElementById('createPostBtn');
-const friendsTabs = document.querySelectorAll('.friends-tab');
-const friendsGrid = document.getElementById('friendsGrid');
-const notificationsList = document.getElementById('notificationsList');
-const searchInput = document.getElementById('searchInput');
-const loginError = document.getElementById('loginError');
+// V-nexus Social Media App - Enhanced Version
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('V-nexus App Initializing...');
+    
+    // Initialize the app
+    initApp();
+});
 
-// Sample Data
-const friendsData = {
-    all: [
-        { id: 1, name: 'Alex Johnson', initials: 'AJ', mutualFriends: 12 },
-        { id: 2, name: 'Sarah Miller', initials: 'SM', mutualFriends: 8 },
-        { id: 3, name: 'Michael Kim', initials: 'MK', mutualFriends: 15 },
-        { id: 4, name: 'Emma Roberts', initials: 'ER', mutualFriends: 5 },
-        { id: 5, name: 'David Chen', initials: 'DC', mutualFriends: 7 },
-        { id: 6, name: 'Lisa Wang', initials: 'LW', mutualFriends: 3 }
-    ],
-    requests: [
-        { id: 7, name: 'James Wilson', initials: 'JW', mutualFriends: 4 },
-        { id: 8, name: 'Olivia Brown', initials: 'OB', mutualFriends: 6 },
-        { id: 9, name: 'Noah Taylor', initials: 'NT', mutualFriends: 2 }
-    ],
-    suggestions: [
-        { id: 10, name: 'Sophia Garcia', initials: 'SG', mutualFriends: 9 },
-        { id: 11, name: 'William Martinez', initials: 'WM', mutualFriends: 11 },
-        { id: 12, name: 'Isabella Lee', initials: 'IL', mutualFriends: 5 }
-    ]
-};
-
-const notificationsData = [
-    {
-        id: 1,
-        type: 'friend_request',
-        icon: 'user-plus',
-        text: '<strong>Alex Johnson</strong> sent you a friend request.',
-        time: '10 minutes ago',
-        unread: true
-    },
-    {
-        id: 2,
-        type: 'like',
-        icon: 'heart',
-        text: '<strong>Sarah Miller</strong> and 12 others liked your post.',
-        time: '2 hours ago',
-        unread: false
-    },
-    {
-        id: 3,
-        type: 'comment',
-        icon: 'comment',
-        text: '<strong>Michael Kim</strong> commented on your post: "Great shot!"',
-        time: '5 hours ago',
-        unread: false
-    },
-    {
-        id: 4,
-        type: 'birthday',
-        icon: 'birthday-cake',
-        text: 'It\'s <strong>Emma Roberts</strong>\'s birthday today. Wish them a happy birthday!',
-        time: '1 day ago',
-        unread: false
-    }
-];
-
-// Initialize the application
 function initApp() {
-    // Check if user is already logged in
-    const isLoggedIn = localStorage.getItem('vnexusLoggedIn');
-    const savedUsername = localStorage.getItem('vnexusUsername');
+    // Set default user
+    setDefaultUser();
     
-    if (isLoggedIn === 'true' && savedUsername) {
-        // User is logged in, show the app
-        showApp();
-        updateProfileInfo(savedUsername);
-    } else {
-        // User is not logged in, show login modal
-        showLogin();
-    }
-    
-    // Load initial data
-    loadFriends('all');
-    loadNotifications();
+    // Setup event listeners
     setupEventListeners();
+    
+    // Load sample data
+    loadSampleData();
+    
+    // Load content
+    loadContent();
+    
+    // Initialize theme
+    initTheme();
+    
+    console.log('V-nexus App Ready!');
 }
 
-// Setup all event listeners
+function setDefaultUser() {
+    const defaultUser = {
+        id: 1,
+        name: 'John Doe',
+        username: 'johndoe',
+        email: 'john.doe@example.com',
+        avatar: 'JD',
+        bio: 'Digital creator | Photography enthusiast | Travel lover',
+        stats: {
+            posts: 128,
+            followers: 1200,
+            following: 856
+        },
+        achievements: ['writer', 'popular', 'streak']
+    };
+    
+    localStorage.setItem('vnexus_currentUser', JSON.stringify(defaultUser));
+    updateUserInfo();
+}
+
 function setupEventListeners() {
-    // Login functionality
-    loginButton.addEventListener('click', handleLogin);
-    
-    // Allow login with Enter key
-    document.getElementById('password').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            handleLogin();
-        }
-    });
-    
-    // Logout functionality
-    logoutButton.addEventListener('click', handleLogout);
+    console.log('Setting up event listeners...');
     
     // Navigation
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
             e.preventDefault();
-            switchPage(link.getAttribute('data-page'));
+            switchPage(this.getAttribute('data-page'));
         });
     });
-    
-    // Like functionality
-    likeButtons.forEach(button => {
-        button.addEventListener('click', toggleLike);
-    });
-    
-    // Create Post Button
-    createPostBtn.addEventListener('click', createPost);
     
     // Friends tabs
-    friendsTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            switchFriendsTab(tab.getAttribute('data-tab'));
+    document.querySelectorAll('.friends-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            switchFriendsTab(this.getAttribute('data-tab'));
         });
     });
     
-    // Search functionality
-    searchInput.addEventListener('keyup', handleSearch);
+    // Profile tabs
+    document.querySelectorAll('.profile-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            switchProfileTab(this.getAttribute('data-tab'));
+        });
+    });
     
-    // Settings changes
-    document.getElementById('privateAccount').addEventListener('change', saveSettings);
-    document.getElementById('emailNotifications').addEventListener('change', saveSettings);
-    document.getElementById('pushNotifications').addEventListener('change', saveSettings);
-    document.getElementById('postVisibility').addEventListener('change', saveSettings);
-    document.getElementById('friendRequests').addEventListener('change', saveSettings);
-    document.getElementById('language').addEventListener('change', saveSettings);
-    document.getElementById('theme').addEventListener('change', saveSettings);
-    document.getElementById('manageBlocked').addEventListener('click', manageBlockedUsers);
-    document.getElementById('addFriendBtn').addEventListener('click', addFriend);
-}
-
-// Login handler
-function handleLogin() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
+    // Create post
+    document.getElementById('createPostBtn').addEventListener('click', createPost);
     
-    // Validate inputs
-    if (!username || !password) {
-        showLoginError('Please enter both username and password');
-        return;
-    }
+    // Post actions
+    document.querySelectorAll('.post-action').forEach(action => {
+        action.addEventListener('click', function() {
+            const type = this.getAttribute('data-type');
+            handlePostAction(type);
+        });
+    });
     
-    if (password.length < 3) {
-        showLoginError('Password must be at least 3 characters long');
-        return;
-    }
+    // Voice recording
+    document.getElementById('startRecording').addEventListener('click', startRecording);
+    document.getElementById('stopRecording').addEventListener('click', stopRecording);
     
-    // Simulate login process
-    loginError.textContent = '';
-    loginButton.textContent = 'Logging in...';
-    loginButton.disabled = true;
+    // Search
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') handleSearch();
+    });
     
-    setTimeout(() => {
-        // Successful login
-        localStorage.setItem('vnexusLoggedIn', 'true');
-        localStorage.setItem('vnexusUsername', username);
-        showApp();
-        updateProfileInfo(username);
+    // Messages
+    document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
+    document.getElementById('messageText').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+    
+    // Theme toggle
+    document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
+    document.getElementById('floatingThemeToggle').addEventListener('click', toggleTheme);
+    document.getElementById('themeSelect').addEventListener('change', function() {
+        changeTheme(this.value);
+    });
+    
+    // Settings
+    document.querySelectorAll('.toggle input, .select-setting').forEach(element => {
+        element.addEventListener('change', saveSettings);
+    });
+    
+    // Conversation items
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.conversation-item')) {
+            const conversationItem = e.target.closest('.conversation-item');
+            selectConversation(conversationItem);
+        }
         
-        // Reset login form
-        document.getElementById('username').value = '';
-        document.getElementById('password').value = '';
-        loginButton.textContent = 'Log In';
-        loginButton.disabled = false;
-    }, 1000);
+        if (e.target.closest('.story')) {
+            const story = e.target.closest('.story');
+            viewStory(story);
+        }
+    });
 }
 
-// Show login error
-function showLoginError(message) {
-    loginError.textContent = message;
-    loginModal.classList.add('shake');
-    setTimeout(() => {
-        loginModal.classList.remove('shake');
-    }, 500);
-}
-
-// Logout handler
-function handleLogout() {
-    localStorage.removeItem('vnexusLoggedIn');
-    localStorage.removeItem('vnexusUsername');
-    showLogin();
-}
-
-// Show login modal
-function showLogin() {
-    loginModal.classList.remove('hidden');
-    appContainer.style.display = 'none';
-}
-
-// Show main app
-function showApp() {
-    loginModal.classList.add('hidden');
-    appContainer.style.display = 'flex';
-}
-
-// Update profile information
-function updateProfileInfo(username) {
-    const profileName = document.querySelector('.profile-info .name');
-    const profileUsername = document.querySelector('.profile-info .username');
-    const profilePic = document.querySelector('.profile-summary .profile-pic');
+function updateUserInfo() {
+    const userData = JSON.parse(localStorage.getItem('vnexus_currentUser'));
     
-    // Generate initials from username
-    const initials = username.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-    
-    if (profileName) profileName.textContent = username;
-    if (profileUsername) profileUsername.textContent = `@${username.toLowerCase().replace(/\s+/g, '')}`;
-    if (profilePic) profilePic.textContent = initials;
+    if (userData) {
+        document.getElementById('userName').textContent = userData.name;
+        document.getElementById('userHandle').textContent = `@${userData.username}`;
+        document.getElementById('userAvatar').textContent = userData.avatar;
+        document.getElementById('currentUserAvatar').textContent = userData.avatar;
+        document.getElementById('profileName').textContent = userData.name;
+        document.getElementById('profileBio').textContent = userData.bio;
+        document.getElementById('profileMainAvatar').textContent = userData.avatar;
+        
+        // Update stats
+        document.querySelector('.stat:nth-child(1) strong').textContent = userData.stats.posts;
+        document.querySelector('.stat:nth-child(2) strong').textContent = userData.stats.followers;
+        document.querySelector('.stat:nth-child(3) strong').textContent = userData.stats.following;
+    }
 }
 
-// Switch between pages
 function switchPage(pageId) {
-    // Remove active class from all links
-    navLinks.forEach(link => link.classList.remove('active'));
-    
-    // Add active class to clicked link
+    // Update navigation
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
     document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
     
-    // Hide all pages
-    pages.forEach(page => page.classList.remove('active'));
-    
-    // Show the selected page
+    // Update pages
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
     document.getElementById(pageId).classList.add('active');
+    
+    // Load page-specific content
+    loadPageContent(pageId);
 }
 
-// Toggle like on posts
-function toggleLike(e) {
-    const button = e.currentTarget;
-    const icon = button.querySelector('i');
-    const likesElement = button.closest('.post').querySelector('.likes');
+function switchFriendsTab(tabId) {
+    document.querySelectorAll('.friends-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
     
-    if (icon.classList.contains('far')) {
-        icon.classList.remove('far');
-        icon.classList.add('fas');
-        button.classList.add('liked');
-        
-        // Update likes count
-        const currentLikes = parseInt(likesElement.textContent) || 0;
-        likesElement.textContent = `${currentLikes + 1} likes`;
-    } else {
-        icon.classList.remove('fas');
-        icon.classList.add('far');
-        button.classList.remove('liked');
-        
-        // Update likes count
-        const currentLikes = parseInt(likesElement.textContent) || 1;
-        likesElement.textContent = `${currentLikes - 1} likes`;
+    loadFriends(tabId);
+}
+
+function switchProfileTab(tabId) {
+    document.querySelectorAll('.profile-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+    
+    loadProfileContent(tabId);
+}
+
+function handlePostAction(type) {
+    switch(type) {
+        case 'image':
+            alert('Image upload functionality would open here');
+            break;
+        case 'voice':
+            toggleVoiceRecorder();
+            break;
+        case 'schedule':
+            schedulePost();
+            break;
     }
 }
 
-// Create a new post
-function createPost() {
-    const postContent = document.getElementById('postContent').value.trim();
+function toggleVoiceRecorder() {
+    const recorder = document.getElementById('voiceRecorder');
+    if (recorder.style.display === 'none') {
+        recorder.style.display = 'block';
+    } else {
+        recorder.style.display = 'none';
+        stopRecording();
+    }
+}
+
+let recording = false;
+let recordingTimer;
+let recordingSeconds = 0;
+
+function startRecording() {
+    recording = true;
+    recordingSeconds = 0;
     
-    if (!postContent) {
+    document.getElementById('startRecording').disabled = true;
+    document.getElementById('stopRecording').disabled = false;
+    document.getElementById('audioPlayback').style.display = 'none';
+    
+    // Start timer
+    recordingTimer = setInterval(() => {
+        recordingSeconds++;
+        const minutes = Math.floor(recordingSeconds / 60).toString().padStart(2, '0');
+        const seconds = (recordingSeconds % 60).toString().padStart(2, '0');
+        document.querySelector('.recording-timer').textContent = `${minutes}:${seconds}`;
+    }, 1000);
+    
+    alert('Recording started... (This is a simulation)');
+}
+
+function stopRecording() {
+    if (!recording) return;
+    
+    recording = false;
+    clearInterval(recordingTimer);
+    
+    document.getElementById('startRecording').disabled = false;
+    document.getElementById('stopRecording').disabled = true;
+    document.getElementById('audioPlayback').style.display = 'block';
+    
+    alert('Recording stopped! Voice message ready to send.');
+}
+
+function schedulePost() {
+    const datetime = prompt('Enter date and time for scheduling (YYYY-MM-DD HH:MM):');
+    if (datetime) {
+        alert(`Post scheduled for ${datetime}`);
+    }
+}
+
+function createPost() {
+    const content = document.getElementById('postContent').value.trim();
+    
+    if (!content) {
         alert('Please write something to post!');
         return;
     }
     
-    // In a real app, this would send the post to a server
-    alert(`Post created: "${postContent}"`);
+    const userData = JSON.parse(localStorage.getItem('vnexus_currentUser'));
+    
+    const newPost = {
+        id: Date.now(),
+        user: userData,
+        content: content,
+        likes: 0,
+        comments: 0,
+        time: 'Just now'
+    };
+    
+    // Add to posts array
+    if (!window.sampleData) loadSampleData();
+    window.sampleData.posts.unshift(newPost);
+    
+    // Update user stats
+    userData.stats.posts++;
+    localStorage.setItem('vnexus_currentUser', JSON.stringify(userData));
+    updateUserInfo();
+    
+    // Reload posts
+    loadPosts();
+    
+    // Clear input
     document.getElementById('postContent').value = '';
+    
+    alert('Post created successfully!');
 }
 
-// Switch friends tabs
-function switchFriendsTab(tabId) {
-    // Remove active class from all tabs
-    friendsTabs.forEach(tab => tab.classList.remove('active'));
+function handleSearch() {
+    const term = document.getElementById('searchInput').value.trim();
     
-    // Add active class to clicked tab
-    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-    
-    // Load the appropriate friends list
-    loadFriends(tabId);
+    if (term) {
+        alert(`Searching for: "${term}"`);
+        // In a real app, this would filter content
+    }
 }
 
-// Load friends based on tab
-function loadFriends(tabId) {
-    const friends = friendsData[tabId];
+// Theme Management
+function initTheme() {
+    const savedTheme = localStorage.getItem('vnexus_theme') || 'dark';
+    changeTheme(savedTheme);
     
-    if (!friends) return;
+    // Update theme select
+    document.getElementById('themeSelect').value = savedTheme;
+}
+
+function toggleTheme() {
+    const currentTheme = document.body.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    changeTheme(newTheme);
+}
+
+function changeTheme(theme) {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('vnexus_theme', theme);
     
-    // Clear the grid
-    friendsGrid.innerHTML = '';
+    // Update theme toggle buttons
+    const themeIcons = document.querySelectorAll('#themeToggleBtn i, #floatingThemeToggle i');
+    themeIcons.forEach(icon => {
+        icon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+    });
     
-    // Add friends to the grid
-    friends.forEach(friend => {
-        const friendCard = document.createElement('div');
-        friendCard.className = 'friend-card';
-        friendCard.innerHTML = `
-            <div class="profile-pic">${friend.initials}</div>
-            <div class="name">${friend.name}</div>
-            <div class="mutual-friends">${friend.mutualFriends} mutual friends</div>
-            <div class="friend-actions">
-                <button class="message-btn">Message</button>
-                ${tabId === 'all' ? '<button class="remove">Remove</button>' : 
-                  tabId === 'requests' ? '<button class="accept">Accept</button><button class="decline">Decline</button>' : 
-                  '<button class="add">Add Friend</button>'}
+    // Update theme select
+    document.getElementById('themeSelect').value = theme;
+}
+
+function saveSettings() {
+    const settings = {
+        theme: document.getElementById('themeSelect').value,
+        highContrast: document.getElementById('highContrast').checked,
+        privateAccount: document.getElementById('privateAccount').checked,
+        emailNotifications: document.getElementById('emailNotifications').checked,
+        pushNotifications: document.getElementById('pushNotifications').checked,
+        postVisibility: document.getElementById('postVisibility').value,
+        friendRequests: document.getElementById('friendRequests').value,
+        language: document.getElementById('language').value,
+        autoplayVideos: document.getElementById('autoplayVideos').checked
+    };
+    
+    localStorage.setItem('vnexus_settings', JSON.stringify(settings));
+    
+    // Apply theme if changed
+    if (settings.theme !== document.body.getAttribute('data-theme')) {
+        changeTheme(settings.theme);
+    }
+    
+    // Apply high contrast
+    if (settings.highContrast) {
+        document.body.setAttribute('data-theme', 'high-contrast');
+    }
+}
+
+// Data Loading Functions
+function loadSampleData() {
+    window.sampleData = {
+        posts: [
+            {
+                id: 1,
+                user: { name: 'Alex Johnson', username: 'alexj', avatar: 'AJ' },
+                content: 'Just finished hiking the beautiful trails at Blue Mountain. The view was absolutely breathtaking! 🏞️ #NatureLover #HikingAdventures',
+                image: true,
+                likes: 124,
+                comments: 23,
+                time: '2 hours ago'
+            },
+            {
+                id: 2,
+                user: { name: 'Sarah Miller', username: 'sarahm', avatar: 'SM' },
+                content: 'Just launched my new website! Check it out and let me know what you think. Special thanks to everyone who supported me through this journey. 🙏',
+                image: false,
+                likes: 89,
+                comments: 14,
+                time: '5 hours ago'
+            },
+            {
+                id: 3,
+                user: { name: 'Michael Kim', username: 'michaelk', avatar: 'MK' },
+                content: 'The future is here! Just got my hands on the latest VR headset and the experience is mind-blowing. 🤯 #Tech #Innovation',
+                image: true,
+                likes: 215,
+                comments: 42,
+                time: '1 day ago'
+            }
+        ],
+        reels: [
+            {
+                id: 1,
+                user: { name: 'Travel Moments', username: 'travel', avatar: 'TM' },
+                caption: 'Beautiful sunset at the beach 🌅',
+                likes: 2400,
+                comments: 142
+            },
+            {
+                id: 2,
+                user: { name: 'Foodie Central', username: 'foodie', avatar: 'FC' },
+                caption: 'How to make the perfect pasta 🍝',
+                likes: 5700,
+                comments: 324
+            },
+            {
+                id: 3,
+                user: { name: 'Fitness Guru', username: 'fitness', avatar: 'FG' },
+                caption: '5 minute full body workout 💪',
+                likes: 8900,
+                comments: 512
+            }
+        ],
+        friends: {
+            all: [
+                { id: 1, name: 'Alex Johnson', avatar: 'AJ', mutual: 12 },
+                { id: 2, name: 'Sarah Miller', avatar: 'SM', mutual: 8 },
+                { id: 3, name: 'Michael Kim', avatar: 'MK', mutual: 15 },
+                { id: 4, name: 'Emma Roberts', avatar: 'ER', mutual: 5 }
+            ],
+            requests: [
+                { id: 5, name: 'James Wilson', avatar: 'JW', mutual: 4 }
+            ],
+            suggestions: [
+                { id: 6, name: 'Sophia Garcia', avatar: 'SG', mutual: 9 }
+            ]
+        },
+        notifications: [
+            {
+                id: 1,
+                type: 'friend_request',
+                icon: 'user-plus',
+                text: '<strong>Alex Johnson</strong> sent you a friend request.',
+                time: '10 minutes ago',
+                unread: true
+            },
+            {
+                id: 2,
+                type: 'like',
+                icon: 'heart',
+                text: '<strong>Sarah Miller</strong> and 12 others liked your post.',
+                time: '2 hours ago',
+                unread: false
+            },
+            {
+                id: 3,
+                type: 'comment',
+                icon: 'comment',
+                text: '<strong>Michael Kim</strong> commented on your post: "Great shot!"',
+                time: '5 hours ago',
+                unread: false
+            }
+        ],
+        stories: [
+            { id: 1, user: { name: 'Alex', avatar: 'AJ' }, hasNew: true },
+            { id: 2, user: { name: 'Sarah', avatar: 'SM' }, hasNew: false },
+            { id: 3, user: { name: 'Mike', avatar: 'MK' }, hasNew: true },
+            { id: 4, user: { name: 'Emma', avatar: 'ER' }, hasNew: false },
+            { id: 5, user: { name: 'David', avatar: 'DC' }, hasNew: true }
+        ],
+        conversations: [
+            {
+                id: 1,
+                user: { name: 'Alex Johnson', avatar: 'AJ', status: 'Online' },
+                messages: [
+                    { id: 1, text: 'Hey! How are you doing?', time: '10:30 AM', sent: false },
+                    { id: 2, text: 'I\'m good! Just working on some new projects. How about you?', time: '10:32 AM', sent: true }
+                ]
+            },
+            {
+                id: 2,
+                user: { name: 'Sarah Miller', avatar: 'SM', status: '2h ago' },
+                messages: [
+                    { id: 1, text: 'Did you see the new update?', time: 'Yesterday', sent: false }
+                ]
+            }
+        ],
+        achievements: [
+            {
+                id: 1,
+                icon: '📝',
+                title: 'Writer',
+                description: 'Created your first post'
+            },
+            {
+                id: 2,
+                icon: '❤️',
+                title: 'Popular',
+                description: 'Received 100+ likes on your posts'
+            },
+            {
+                id: 3,
+                icon: '🔥',
+                title: 'Hot Streak',
+                description: 'Posted for 7 consecutive days'
+            }
+        ]
+    };
+}
+
+function loadContent() {
+    loadStories();
+    loadPosts();
+    loadReels();
+    loadFriends('all');
+    loadNotifications();
+    loadConversations();
+    loadSettings();
+}
+
+function loadPageContent(pageId) {
+    switch(pageId) {
+        case 'home':
+            loadStories();
+            loadPosts();
+            break;
+        case 'reels':
+            loadReels();
+            break;
+        case 'friends':
+            loadFriends('all');
+            break;
+        case 'messages':
+            loadConversations();
+            break;
+        case 'profile':
+            loadProfileContent('posts');
+            break;
+        case 'notifications':
+            loadNotifications();
+            break;
+    }
+}
+
+function loadStories() {
+    const container = document.getElementById('storiesContainer');
+    if (!container || !window.sampleData) return;
+    
+    // Add current user's story first
+    const userData = JSON.parse(localStorage.getItem('vnexus_currentUser'));
+    const currentUserStory = {
+        id: 0,
+        user: userData,
+        hasNew: false
+    };
+    
+    const allStories = [currentUserStory, ...window.sampleData.stories];
+    
+    container.innerHTML = allStories.map(story => `
+        <div class="story" data-story-id="${story.id}">
+            <div class="story-avatar ${story.hasNew ? 'has-new' : ''}">
+                <div class="profile-pic">${story.user.avatar}</div>
             </div>
-        `;
-        friendsGrid.appendChild(friendCard);
-    });
+            <div class="story-username">${story.id === 0 ? 'Your Story' : story.user.name}</div>
+        </div>
+    `).join('');
+}
+
+function viewStory(storyElement) {
+    const storyId = storyElement.getAttribute('data-story-id');
+    if (storyId === '0') {
+        alert('Create your story!');
+    } else {
+        alert(`Viewing ${storyElement.querySelector('.story-username').textContent}'s story`);
+    }
+}
+
+function loadPosts() {
+    const container = document.getElementById('postsContainer');
+    if (!container || !window.sampleData) return;
     
-    // Add event listeners to friend action buttons
-    document.querySelectorAll('.message-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const friendName = e.target.closest('.friend-card').querySelector('.name').textContent;
-            alert(`Opening chat with ${friendName}`);
-        });
-    });
+    container.innerHTML = window.sampleData.posts.map(post => `
+        <div class="post" data-post-id="${post.id}">
+            <div class="post-header">
+                <div class="profile-pic">${post.user.avatar}</div>
+                <div class="post-user-info">
+                    <div class="name">${post.user.name}</div>
+                    <div class="time">${post.time}</div>
+                </div>
+                <div class="post-options">
+                    <i class="fas fa-ellipsis-h"></i>
+                </div>
+            </div>
+            <div class="post-content">${post.content}</div>
+            ${post.image ? `<div class="post-image"><i class="fas fa-mountain"></i> Post Image</div>` : ''}
+            <div class="post-stats">
+                <div class="likes">${post.likes} likes</div>
+                <div class="comments">${post.comments} comments</div>
+            </div>
+            <div class="post-actions-bar">
+                <div class="post-action-button like-button">
+                    <i class="far fa-heart"></i>
+                    <span>Like</span>
+                </div>
+                <div class="post-action-button">
+                    <i class="far fa-comment"></i>
+                    <span>Comment</span>
+                </div>
+                <div class="post-action-button">
+                    <i class="far fa-share-square"></i>
+                    <span>Share</span>
+                </div>
+                <div class="post-action-button save-button">
+                    <i class="far fa-bookmark"></i>
+                    <span>Save</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
     
-    document.querySelectorAll('.remove').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const friendCard = e.target.closest('.friend-card');
-            const friendName = friendCard.querySelector('.name').textContent;
-            if (confirm(`Are you sure you want to remove ${friendName} as a friend?`)) {
-                friendCard.style.opacity = '0';
-                setTimeout(() => {
-                    friendCard.remove();
-                }, 300);
+    // Attach post interaction events
+    attachPostEvents();
+}
+
+function attachPostEvents() {
+    // Like buttons
+    document.querySelectorAll('.like-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            const likesElement = this.closest('.post').querySelector('.likes');
+            
+            if (icon.classList.contains('far')) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                this.classList.add('liked');
+                incrementLikes(likesElement);
+            } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                this.classList.remove('liked');
+                decrementLikes(likesElement);
             }
         });
     });
     
-    document.querySelectorAll('.accept, .add').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const friendCard = e.target.closest('.friend-card');
-            const friendName = friendCard.querySelector('.name').textContent;
-            alert(`Friend request sent to ${friendName}`);
-            friendCard.style.opacity = '0';
-            setTimeout(() => {
-                friendCard.remove();
-            }, 300);
-        });
-    });
-    
-    document.querySelectorAll('.decline').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const friendCard = e.target.closest('.friend-card');
-            friendCard.style.opacity = '0';
-            setTimeout(() => {
-                friendCard.remove();
-            }, 300);
+    // Save buttons
+    document.querySelectorAll('.save-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('far')) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                this.classList.add('saved');
+                alert('Post saved!');
+            } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                this.classList.remove('saved');
+                alert('Post unsaved!');
+            }
         });
     });
 }
 
-// Load notifications
-function loadNotifications() {
-    // Clear the list
-    notificationsList.innerHTML = '';
+function incrementLikes(likesElement) {
+    const current = parseInt(likesElement.textContent) || 0;
+    likesElement.textContent = `${current + 1} likes`;
+}
+
+function decrementLikes(likesElement) {
+    const current = parseInt(likesElement.textContent) || 1;
+    likesElement.textContent = `${current - 1} likes`;
+}
+
+function loadReels() {
+    const container = document.getElementById('reelsContainer');
+    if (!container || !window.sampleData) return;
     
-    // Add notifications to the list
-    notificationsData.forEach(notification => {
-        const notificationElement = document.createElement('div');
-        notificationElement.className = `notification ${notification.unread ? 'unread' : ''}`;
-        notificationElement.innerHTML = `
+    container.innerHTML = window.sampleData.reels.map(reel => `
+        <div class="reel">
+            <div class="reel-video">
+                <i class="fas fa-play-circle"></i> Video Content
+            </div>
+            <div class="reel-info">
+                <div class="reel-user">
+                    <div class="profile-pic">${reel.user.avatar}</div>
+                    <div class="name">${reel.user.name}</div>
+                </div>
+                <div class="reel-caption">${reel.caption}</div>
+                <div class="reel-stats">
+                    <span><i class="far fa-heart"></i> ${reel.likes}</span>
+                    <span><i class="far fa-comment"></i> ${reel.comments}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadFriends(tab) {
+    const container = document.getElementById('friendsGrid');
+    if (!container || !window.sampleData) return;
+    
+    const friends = window.sampleData.friends[tab] || [];
+    container.innerHTML = friends.map(friend => `
+        <div class="friend-card">
+            <div class="profile-pic">${friend.avatar}</div>
+            <div class="name">${friend.name}</div>
+            <div class="mutual-friends">${friend.mutual} mutual friends</div>
+            <div class="friend-actions">
+                <button class="message-btn">Message</button>
+                ${tab === 'all' ? '<button class="remove">Remove</button>' : 
+                  tab === 'requests' ? '<button class="accept">Accept</button><button class="decline">Decline</button>' : 
+                  '<button class="add">Add Friend</button>'}
+            </div>
+        </div>
+    `).join('');
+    
+    // Attach friend action events
+    document.querySelectorAll('.message-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const name = this.closest('.friend-card').querySelector('.name').textContent;
+            alert(`Opening chat with ${name}`);
+        });
+    });
+    
+    document.querySelectorAll('.remove, .decline').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const card = this.closest('.friend-card');
+            card.style.opacity = '0';
+            setTimeout(() => card.remove(), 300);
+        });
+    });
+    
+    document.querySelectorAll('.accept, .add').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const card = this.closest('.friend-card');
+            card.style.opacity = '0';
+            setTimeout(() => card.remove(), 300);
+            alert('Friend request accepted!');
+        });
+    });
+}
+
+function loadNotifications() {
+    const container = document.getElementById('notificationsList');
+    if (!container || !window.sampleData) return;
+    
+    container.innerHTML = window.sampleData.notifications.map(notification => `
+        <div class="notification ${notification.unread ? 'unread' : ''}">
             <div class="notification-icon">
                 <i class="fas fa-${notification.icon}"></i>
             </div>
@@ -381,87 +737,180 @@ function loadNotifications() {
                   '<button class="accept-notification"><i class="fas fa-check"></i></button>' : ''}
                 <button class="dismiss-notification"><i class="fas fa-times"></i></button>
             </div>
-        `;
-        notificationsList.appendChild(notificationElement);
-    });
+        </div>
+    `).join('');
     
-    // Add event listeners to notification buttons
-    document.querySelectorAll('.accept-notification').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const notification = e.target.closest('.notification');
+    // Attach notification action events
+    document.querySelectorAll('.accept-notification, .dismiss-notification').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const notification = this.closest('.notification');
             notification.style.opacity = '0';
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        });
-    });
-    
-    document.querySelectorAll('.dismiss-notification').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const notification = e.target.closest('.notification');
-            notification.style.opacity = '0';
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
+            setTimeout(() => notification.remove(), 300);
         });
     });
 }
 
-// Handle search
-function handleSearch(e) {
-    if (e.key === 'Enter') {
-        const searchTerm = searchInput.value.trim();
-        if (searchTerm) {
-            alert(`Searching for: "${searchTerm}"`);
-            // In a real app, this would make an API call to search for content/users
-        }
+function loadConversations() {
+    const container = document.getElementById('conversationsList');
+    if (!container || !window.sampleData) return;
+    
+    container.innerHTML = window.sampleData.conversations.map(conversation => `
+        <div class="conversation-item" data-conversation-id="${conversation.id}">
+            <div class="profile-pic">${conversation.user.avatar}</div>
+            <div class="conversation-info">
+                <div class="conversation-name">${conversation.user.name}</div>
+                <div class="conversation-preview">${conversation.messages[conversation.messages.length - 1].text}</div>
+            </div>
+        </div>
+    `).join('');
+    
+    // Select first conversation by default
+    if (window.sampleData.conversations.length > 0) {
+        selectConversation(document.querySelector('.conversation-item'));
     }
 }
 
-// Save settings
-function saveSettings() {
-    const settings = {
-        privateAccount: document.getElementById('privateAccount').checked,
-        emailNotifications: document.getElementById('emailNotifications').checked,
-        pushNotifications: document.getElementById('pushNotifications').checked,
-        postVisibility: document.getElementById('postVisibility').value,
-        friendRequests: document.getElementById('friendRequests').value,
-        language: document.getElementById('language').value,
-        theme: document.getElementById('theme').value
-    };
+function selectConversation(conversationItem) {
+    // Update active conversation
+    document.querySelectorAll('.conversation-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    conversationItem.classList.add('active');
     
-    localStorage.setItem('vnexusSettings', JSON.stringify(settings));
-    console.log('Settings saved:', settings);
+    // Load conversation messages
+    const conversationId = conversationItem.getAttribute('data-conversation-id');
+    const conversation = window.sampleData.conversations.find(c => c.id == conversationId);
+    
+    if (conversation) {
+        document.getElementById('chatUserName').textContent = conversation.user.name;
+        document.getElementById('chatUserAvatar').textContent = conversation.user.avatar;
+        document.querySelector('.status').textContent = conversation.user.status;
+        
+        const messagesContainer = document.getElementById('chatMessages');
+        messagesContainer.innerHTML = conversation.messages.map(message => `
+            <div class="message ${message.sent ? 'sent' : 'received'}">
+                <div class="message-text">${message.text}</div>
+                <div class="message-time">${message.time}</div>
+            </div>
+        `).join('');
+        
+        // Scroll to bottom
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
 }
 
-// Load settings
+function sendMessage() {
+    const messageInput = document.getElementById('messageText');
+    const message = messageInput.value.trim();
+    
+    if (!message) return;
+    
+    const messagesContainer = document.getElementById('chatMessages');
+    
+    // Add message to UI
+    const newMessage = {
+        id: Date.now(),
+        text: message,
+        time: 'Just now',
+        sent: true
+    };
+    
+    messagesContainer.innerHTML += `
+        <div class="message sent">
+            <div class="message-text">${message}</div>
+            <div class="message-time">Just now</div>
+        </div>
+    `;
+    
+    // Clear input
+    messageInput.value = '';
+    
+    // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // Simulate reply after delay
+    setTimeout(() => {
+        const replies = ['Nice!', 'That sounds great!', 'I agree!', 'Interesting!'];
+        const randomReply = replies[Math.floor(Math.random() * replies.length)];
+        
+        messagesContainer.innerHTML += `
+            <div class="message received">
+                <div class="message-text">${randomReply}</div>
+                <div class="message-time">Just now</div>
+            </div>
+        `;
+        
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }, 1000);
+}
+
+function loadProfileContent(tabId) {
+    const container = document.getElementById('profileContent');
+    if (!container || !window.sampleData) return;
+    
+    switch(tabId) {
+        case 'posts':
+            container.innerHTML = `
+                <div class="posts-grid">
+                    ${window.sampleData.posts.map(post => `
+                        <div class="profile-post">
+                            <div class="post-content">${post.content}</div>
+                            ${post.image ? `<div class="post-image"><i class="fas fa-mountain"></i></div>` : ''}
+                            <div class="post-stats">${post.likes} likes • ${post.comments} comments</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            break;
+        case 'reels':
+            container.innerHTML = `
+                <div class="reels-grid">
+                    ${window.sampleData.reels.map(reel => `
+                        <div class="profile-reel">
+                            <div class="reel-thumbnail"><i class="fas fa-play-circle"></i></div>
+                            <div class="reel-stats">${reel.likes} likes</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            break;
+        case 'tagged':
+            container.innerHTML = '<p>No tagged posts yet.</p>';
+            break;
+        case 'achievements':
+            container.innerHTML = `
+                <div class="achievements-list">
+                    ${window.sampleData.achievements.map(achievement => `
+                        <div class="achievement-card">
+                            <div class="achievement-icon">${achievement.icon}</div>
+                            <div class="achievement-info">
+                                <h4>${achievement.title}</h4>
+                                <p>${achievement.description}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            break;
+    }
+}
+
 function loadSettings() {
-    const savedSettings = localStorage.getItem('vnexusSettings');
+    const savedSettings = localStorage.getItem('vnexus_settings');
+    
     if (savedSettings) {
         const settings = JSON.parse(savedSettings);
         
-        document.getElementById('privateAccount').checked = settings.privateAccount || false;
-        document.getElementById('emailNotifications').checked = settings.emailNotifications !== false;
-        document.getElementById('pushNotifications').checked = settings.pushNotifications !== false;
-        document.getElementById('postVisibility').value = settings.postVisibility || 'Friends';
-        document.getElementById('friendRequests').value = settings.friendRequests || 'Everyone';
-        document.getElementById('language').value = settings.language || 'English';
-        document.getElementById('theme').value = settings.theme || 'Dark';
+        // Apply settings to form elements
+        Object.keys(settings).forEach(key => {
+            const element = document.getElementById(key);
+            if (element) {
+                if (element.type === 'checkbox') {
+                    element.checked = settings[key];
+                } else {
+                    element.value = settings[key];
+                }
+            }
+        });
     }
 }
-
-// Manage blocked users
-function manageBlockedUsers() {
-    alert('Blocked users management would open here');
-}
-
-// Add friend
-function addFriend() {
-    alert('Add friend functionality would open here');
-}
-
-// Initialize the app when the DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    initApp();
-    loadSettings();
-});

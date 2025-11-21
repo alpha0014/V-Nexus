@@ -8,320 +8,309 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Login Modal -->
-    <div class="modal" id="loginModal">
-        <div class="login-form">
-            <div class="logo">
-                <i class="fas fa-code-branch"></i>
-                <span>V-nexus</span>
-            </div>
-            <h2>Welcome to V-nexus</h2>
-            <div class="form-group">
-                <label for="username">Username or Email</label>
-                <input type="text" id="username" placeholder="Enter your username or email">
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter your password">
-            </div>
-            <div class="login-actions">
-                <a href="#" class="signup-link">Create Account</a>
-                <button class="login-button" id="loginButton">Log In</button>
-            </div>
-            <div id="loginError" class="error-message"></div>
-        </div>
-    </div>
-
-    <!-- Main App Container -->
-    <div class="container" id="appContainer">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="logo">
-                <i class="fas fa-code-branch"></i>
-                <span>V-nexus</span>
-            </div>
-            <ul class="nav-links">
-                <li><a href="#" class="active" data-page="home"><i class="fas fa-home"></i> <span>Home</span></a></li>
-                <li><a href="#" data-page="reels"><i class="fas fa-play-circle"></i> <span>Reels</span></a></li>
-                <li><a href="#" data-page="friends"><i class="fas fa-user-friends"></i> <span>Friends</span></a></li>
-                <li><a href="#" data-page="notifications"><i class="fas fa-bell"></i> <span>Notifications</span></a></li>
-                <li><a href="#" data-page="settings"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
-            </ul>
-            <div class="profile-summary">
-                <div class="profile-pic">JD</div>
-                <div class="profile-info">
-                    <div class="name">John Doe</div>
-                    <div class="username">@johndoe</div>
+    <!-- Main App -->
+    <div class="app-container">
+        <div class="container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="logo">
+                    <i class="fas fa-code-branch"></i>
+                    <span>V-nexus</span>
                 </div>
-                <i class="fas fa-chevron-down"></i>
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Top Bar -->
-            <div class="top-bar">
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Search for friends or content...">
-                </div>
-                <div class="top-actions">
-                    <button id="createPostBtn"><i class="fas fa-plus"></i> Create Post</button>
-                    <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                </div>
-            </div>
-
-            <!-- Page Content -->
-            <div class="page-content">
-                <!-- Home Page -->
-                <div class="page active" id="home">
-                    <div class="create-post">
-                        <div class="post-input">
-                            <div class="profile-pic">JD</div>
-                            <input type="text" id="postContent" placeholder="What's on your mind, John?">
-                        </div>
-                        <div class="post-actions">
-                            <div class="post-action">
-                                <i class="fas fa-image"></i>
-                                <span>Photo/Video</span>
-                            </div>
-                            <div class="post-action">
-                                <i class="fas fa-user-tag"></i>
-                                <span>Tag Friends</span>
-                            </div>
-                            <div class="post-action">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>Location</span>
-                            </div>
-                        </div>
+                <ul class="nav-links">
+                    <li><a href="#" class="nav-link active" data-page="home"><i class="fas fa-home"></i> <span>Home</span></a></li>
+                    <li><a href="#" class="nav-link" data-page="reels"><i class="fas fa-play-circle"></i> <span>Reels</span></a></li>
+                    <li><a href="#" class="nav-link" data-page="friends"><i class="fas fa-user-friends"></i> <span>Friends</span></a></li>
+                    <li><a href="#" class="nav-link" data-page="messages"><i class="fas fa-comments"></i> <span>Messages</span></a></li>
+                    <li><a href="#" class="nav-link" data-page="notifications"><i class="fas fa-bell"></i> <span>Notifications</span></a></li>
+                    <li><a href="#" class="nav-link" data-page="profile"><i class="fas fa-user"></i> <span>Profile</span></a></li>
+                    <li><a href="#" class="nav-link" data-page="settings"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+                </ul>
+                <div class="profile-summary">
+                    <div class="profile-pic" id="userAvatar">JD</div>
+                    <div class="profile-info">
+                        <div class="name" id="userName">John Doe</div>
+                        <div class="username" id="userHandle">@johndoe</div>
                     </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
 
-                    <div class="post">
-                        <div class="post-header">
-                            <div class="profile-pic">AJ</div>
-                            <div class="post-user-info">
-                                <div class="name">Alex Johnson</div>
-                                <div class="time">2 hours ago</div>
-                            </div>
-                            <div class="post-options">
-                                <i class="fas fa-ellipsis-h"></i>
-                            </div>
-                        </div>
-                        <div class="post-content">
-                            Just finished hiking the beautiful trails at Blue Mountain. The view was absolutely breathtaking! 🏞️ #NatureLover #HikingAdventures
-                        </div>
-                        <div class="post-image">
-                            <i class="fas fa-mountain"></i> Mountain View
-                        </div>
-                        <div class="post-stats">
-                            <div class="likes">124 likes</div>
-                            <div class="comments">23 comments</div>
-                        </div>
-                        <div class="post-actions-bar">
-                            <div class="post-action-button like-button">
-                                <i class="far fa-heart"></i>
-                                <span>Like</span>
-                            </div>
-                            <div class="post-action-button">
-                                <i class="far fa-comment"></i>
-                                <span>Comment</span>
-                            </div>
-                            <div class="post-action-button">
-                                <i class="far fa-share-square"></i>
-                                <span>Share</span>
-                            </div>
-                        </div>
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Top Bar -->
+                <div class="top-bar">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search for friends or content...">
                     </div>
-
-                    <div class="post">
-                        <div class="post-header">
-                            <div class="profile-pic">SM</div>
-                            <div class="post-user-info">
-                                <div class="name">Sarah Miller</div>
-                                <div class="time">5 hours ago</div>
-                            </div>
-                            <div class="post-options">
-                                <i class="fas fa-ellipsis-h"></i>
-                            </div>
-                        </div>
-                        <div class="post-content">
-                            Just launched my new website! Check it out and let me know what you think. Special thanks to everyone who supported me through this journey. 🙏
-                        </div>
-                        <div class="post-stats">
-                            <div class="likes">89 likes</div>
-                            <div class="comments">14 comments</div>
-                        </div>
-                        <div class="post-actions-bar">
-                            <div class="post-action-button like-button">
-                                <i class="far fa-heart"></i>
-                                <span>Like</span>
-                            </div>
-                            <div class="post-action-button">
-                                <i class="far fa-comment"></i>
-                                <span>Comment</span>
-                            </div>
-                            <div class="post-action-button">
-                                <i class="far fa-share-square"></i>
-                                <span>Share</span>
-                            </div>
-                        </div>
+                    <div class="top-actions">
+                        <button id="createPostBtn"><i class="fas fa-plus"></i> Create Post</button>
+                        <button id="themeToggleBtn"><i class="fas fa-moon"></i> Theme</button>
                     </div>
                 </div>
 
-                <!-- Reels Page -->
-                <div class="page" id="reels">
-                    <h2>Reels</h2>
-                    <div class="reels-container">
-                        <div class="reel">
-                            <div class="reel-video">
-                                <i class="fas fa-play-circle"></i> Video Content
+                <!-- Page Content -->
+                <div class="page-content">
+                    <!-- Home Page -->
+                    <div id="home" class="page active">
+                        <!-- Stories Section -->
+                        <div class="stories-container" id="storiesContainer">
+                            <!-- Stories will be loaded here -->
+                        </div>
+
+                        <!-- Create Post -->
+                        <div class="create-post">
+                            <div class="post-input">
+                                <div class="profile-pic" id="currentUserAvatar">JD</div>
+                                <input type="text" id="postContent" placeholder="What's on your mind?">
                             </div>
-                            <div class="reel-info">
-                                <div class="reel-user">
-                                    <div class="profile-pic">TM</div>
-                                    <div class="name">Travel Moments</div>
+                            <div class="post-actions">
+                                <div class="post-action" data-type="image">
+                                    <i class="fas fa-image"></i>
+                                    <span>Photo/Video</span>
                                 </div>
-                                <div class="reel-caption">Beautiful sunset at the beach 🌅</div>
-                                <div class="reel-stats">
-                                    <span><i class="far fa-heart"></i> 2.4K</span>
-                                    <span><i class="far fa-comment"></i> 142</span>
+                                <div class="post-action" data-type="voice">
+                                    <i class="fas fa-microphone"></i>
+                                    <span>Voice Message</span>
+                                </div>
+                                <div class="post-action" data-type="schedule">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>Schedule</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="reel">
-                            <div class="reel-video">
-                                <i class="fas fa-play-circle"></i> Video Content
+
+                        <!-- Voice Recorder (Hidden by default) -->
+                        <div id="voiceRecorder" class="voice-recorder" style="display: none;">
+                            <div class="recording-controls">
+                                <button id="startRecording" class="record-btn">
+                                    <i class="fas fa-microphone"></i> Start Recording
+                                </button>
+                                <button id="stopRecording" class="record-btn stop" disabled>
+                                    <i class="fas fa-stop"></i> Stop
+                                </button>
+                                <div class="recording-timer">00:00</div>
                             </div>
-                            <div class="reel-info">
-                                <div class="reel-user">
-                                    <div class="profile-pic">FC</div>
-                                    <div class="name">Foodie Central</div>
-                                </div>
-                                <div class="reel-caption">How to make the perfect pasta 🍝</div>
-                                <div class="reel-stats">
-                                    <span><i class="far fa-heart"></i> 5.7K</span>
-                                    <span><i class="far fa-comment"></i> 324</span>
-                                </div>
-                            </div>
+                            <audio id="audioPlayback" controls style="display: none; width: 100%; margin-top: 10px;"></audio>
                         </div>
-                        <div class="reel">
-                            <div class="reel-video">
-                                <i class="fas fa-play-circle"></i> Video Content
+
+                        <!-- Posts Container -->
+                        <div id="postsContainer">
+                            <!-- Posts will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Reels Page -->
+                    <div id="reels" class="page">
+                        <h2>Reels</h2>
+                        <div class="reels-container" id="reelsContainer">
+                            <!-- Reels will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Friends Page -->
+                    <div id="friends" class="page">
+                        <div class="friends-header">
+                            <h2>Friends</h2>
+                            <button id="addFriendBtn"><i class="fas fa-user-plus"></i> Add Friend</button>
+                        </div>
+                        <div class="friends-tabs">
+                            <div class="friends-tab active" data-tab="all">All Friends</div>
+                            <div class="friends-tab" data-tab="requests">Friend Requests</div>
+                            <div class="friends-tab" data-tab="suggestions">Suggestions</div>
+                        </div>
+                        <div class="friends-grid" id="friendsGrid">
+                            <!-- Friends will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Messages Page -->
+                    <div id="messages" class="page">
+                        <div class="messages-header">
+                            <h2>Messages</h2>
+                            <button id="newMessageBtn"><i class="fas fa-edit"></i> New Message</button>
+                        </div>
+                        <div class="messages-container">
+                            <div class="conversations-list" id="conversationsList">
+                                <!-- Conversations will be loaded here -->
                             </div>
-                            <div class="reel-info">
-                                <div class="reel-user">
-                                    <div class="profile-pic">FG</div>
-                                    <div class="name">Fitness Guru</div>
+                            <div class="chat-container">
+                                <div class="chat-header">
+                                    <div class="chat-user-info">
+                                        <div class="profile-pic" id="chatUserAvatar">AJ</div>
+                                        <div>
+                                            <div class="name" id="chatUserName">Alex Johnson</div>
+                                            <div class="status">Online</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="reel-caption">5 minute full body workout 💪</div>
-                                <div class="reel-stats">
-                                    <span><i class="far fa-heart"></i> 8.9K</span>
-                                    <span><i class="far fa-comment"></i> 512</span>
+                                <div class="chat-messages" id="chatMessages">
+                                    <!-- Messages will be loaded here -->
+                                </div>
+                                <div class="message-input">
+                                    <input type="text" id="messageText" placeholder="Type a message...">
+                                    <button id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Friends Page -->
-                <div class="page" id="friends">
-                    <div class="friends-header">
-                        <h2>Friends</h2>
-                        <button id="addFriendBtn"><i class="fas fa-user-plus"></i> Add Friend</button>
-                    </div>
-                    <div class="friends-tabs">
-                        <div class="friends-tab active" data-tab="all">All Friends (128)</div>
-                        <div class="friends-tab" data-tab="requests">Friend Requests (3)</div>
-                        <div class="friends-tab" data-tab="suggestions">Suggestions</div>
-                    </div>
-                    <div class="friends-grid" id="friendsGrid">
-                        <!-- Friends will be loaded here by JavaScript -->
-                    </div>
-                </div>
-
-                <!-- Notifications Page -->
-                <div class="page" id="notifications">
-                    <h2>Notifications</h2>
-                    <div id="notificationsList">
-                        <!-- Notifications will be loaded here by JavaScript -->
-                    </div>
-                </div>
-
-                <!-- Settings Page -->
-                <div class="page" id="settings">
-                    <h2>Settings</h2>
-                    <div class="settings-section">
-                        <h3>Account Settings</h3>
-                        <div class="setting-item">
-                            <div class="setting-label">Private Account</div>
-                            <label class="toggle">
-                                <input type="checkbox" id="privateAccount">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="setting-item">
-                            <div class="setting-label">Email Notifications</div>
-                            <label class="toggle">
-                                <input type="checkbox" id="emailNotifications" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="setting-item">
-                            <div class="setting-label">Push Notifications</div>
-                            <label class="toggle">
-                                <input type="checkbox" id="pushNotifications" checked>
-                                <span class="slider"></span>
-                            </label>
+                    <!-- Notifications Page -->
+                    <div id="notifications" class="page">
+                        <h2>Notifications</h2>
+                        <div id="notificationsList">
+                            <!-- Notifications will be loaded here -->
                         </div>
                     </div>
 
-                    <div class="settings-section">
-                        <h3>Privacy</h3>
-                        <div class="setting-item">
-                            <div class="setting-label">Who can see your posts</div>
-                            <select class="select-setting" id="postVisibility">
-                                <option>Friends</option>
-                                <option>Public</option>
-                                <option>Only Me</option>
-                            </select>
+                    <!-- Profile Page -->
+                    <div id="profile" class="page">
+                        <div class="profile-header">
+                            <div class="profile-cover">
+                                <button class="edit-cover"><i class="fas fa-camera"></i> Edit Cover</button>
+                            </div>
+                            <div class="profile-info">
+                                <div class="profile-avatar">
+                                    <div class="profile-pic large" id="profileMainAvatar">JD</div>
+                                    <button class="edit-avatar"><i class="fas fa-camera"></i></button>
+                                </div>
+                                <div class="profile-details">
+                                    <h2 id="profileName">John Doe</h2>
+                                    <p id="profileBio">Digital creator | Photography enthusiast | Travel lover</p>
+                                    <div class="profile-stats">
+                                        <div class="stat">
+                                            <strong>128</strong>
+                                            <span>Posts</span>
+                                        </div>
+                                        <div class="stat">
+                                            <strong>1.2K</strong>
+                                            <span>Followers</span>
+                                        </div>
+                                        <div class="stat">
+                                            <strong>856</strong>
+                                            <span>Following</span>
+                                        </div>
+                                    </div>
+                                    <div class="profile-actions">
+                                        <button class="edit-profile-btn"><i class="fas fa-edit"></i> Edit Profile</button>
+                                        <button class="share-profile-btn"><i class="fas fa-share"></i> Share Profile</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="setting-item">
-                            <div class="setting-label">Who can send you friend requests</div>
-                            <select class="select-setting" id="friendRequests">
-                                <option>Everyone</option>
-                                <option>Friends of Friends</option>
-                            </select>
+                        
+                        <div class="profile-tabs">
+                            <div class="profile-tab active" data-tab="posts">Posts</div>
+                            <div class="profile-tab" data-tab="reels">Reels</div>
+                            <div class="profile-tab" data-tab="tagged">Tagged</div>
+                            <div class="profile-tab" data-tab="achievements">Achievements</div>
                         </div>
-                        <div class="setting-item">
-                            <div class="setting-label">Blocked Users</div>
-                            <button id="manageBlocked">Manage</button>
+                        
+                        <div class="profile-content" id="profileContent">
+                            <!-- Profile content will be loaded here -->
                         </div>
                     </div>
 
-                    <div class="settings-section">
-                        <h3>Preferences</h3>
-                        <div class="setting-item">
-                            <div class="setting-label">Language</div>
-                            <select class="select-setting" id="language">
-                                <option>English</option>
-                                <option>Spanish</option>
-                                <option>French</option>
-                                <option>German</option>
-                            </select>
+                    <!-- Settings Page -->
+                    <div id="settings" class="page">
+                        <h2>Settings</h2>
+                        <div class="settings-section">
+                            <h3>Appearance</h3>
+                            <div class="setting-item">
+                                <div class="setting-label">Theme</div>
+                                <select class="select-setting" id="themeSelect">
+                                    <option value="dark">Dark</option>
+                                    <option value="light">Light</option>
+                                    <option value="auto">Auto</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">High Contrast</div>
+                                <label class="toggle">
+                                    <input type="checkbox" id="highContrast">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
                         </div>
-                        <div class="setting-item">
-                            <div class="setting-label">Theme</div>
-                            <select class="select-setting" id="theme">
-                                <option>Dark</option>
-                                <option>Light</option>
-                                <option>Auto</option>
-                            </select>
+
+                        <div class="settings-section">
+                            <h3>Account Settings</h3>
+                            <div class="setting-item">
+                                <div class="setting-label">Private Account</div>
+                                <label class="toggle">
+                                    <input type="checkbox" id="privateAccount">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">Email Notifications</div>
+                                <label class="toggle">
+                                    <input type="checkbox" id="emailNotifications" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">Push Notifications</div>
+                                <label class="toggle">
+                                    <input type="checkbox" id="pushNotifications" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3>Privacy</h3>
+                            <div class="setting-item">
+                                <div class="setting-label">Who can see your posts</div>
+                                <select class="select-setting" id="postVisibility">
+                                    <option>Friends</option>
+                                    <option>Public</option>
+                                    <option>Only Me</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">Who can send you friend requests</div>
+                                <select class="select-setting" id="friendRequests">
+                                    <option>Everyone</option>
+                                    <option>Friends of Friends</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">Blocked Users</div>
+                                <button id="manageBlocked">Manage</button>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3>Preferences</h3>
+                            <div class="setting-item">
+                                <div class="setting-label">Language</div>
+                                <select class="select-setting" id="language">
+                                    <option>English</option>
+                                    <option>Spanish</option>
+                                    <option>French</option>
+                                    <option>German</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">Auto-play videos</div>
+                                <label class="toggle">
+                                    <input type="checkbox" id="autoplayVideos" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Theme Toggle Button -->
+    <button id="floatingThemeToggle" class="floating-theme-toggle">
+        <i class="fas fa-moon"></i>
+    </button>
 
     <script src="script.js"></script>
 </body>
